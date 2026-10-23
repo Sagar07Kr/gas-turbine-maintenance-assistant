@@ -82,9 +82,34 @@
   .send-btn { border: none; border-radius: 12px; padding: 0 18px; font-weight: 600; color: #1b1206; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
   .send-btn:focus-visible, .clear-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   input:disabled, .send-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    flex: none; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center;
+    font-weight: 800; font-size: 0.85rem; color: #1b1206; letter-spacing: 0.04em;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 0 18px rgba(255, 154, 60, 0.45);
+  }
+  .header-actions { display: flex; align-items: center; gap: 12px; }
+  .status { display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+  .status .dot { width: 8px; height: 8px; border-radius: 50%; background: #8a8a8a; }
+  .status.online .dot { background: #4ade80; box-shadow: 0 0 8px #4ade80; }
+  .status.offline .dot { background: #f87171; box-shadow: 0 0 8px #f87171; }
+  .suggestions { display: flex; flex-wrap: wrap; gap: 8px; animation: fadeIn 0.35s ease-out both; }
+  .suggestions-title { width: 100%; font-size: 0.75rem; color: var(--muted); margin-bottom: 2px; }
+  .chip {
+    font-size: 0.8rem; color: var(--text); background: rgba(255, 154, 60, 0.10);
+    border: 1px solid rgba(255, 154, 60, 0.35); border-radius: 999px; padding: 7px 12px; text-align: left;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  }
+  .chip:hover, .chip:focus-visible { background: rgba(255, 154, 60, 0.24); border-color: var(--accent); transform: translateY(-1px); outline: none; }
+  .hint { margin: 0; padding: 0 18px 12px; font-size: 0.72rem; color: #9a9286; }
+  .send-btn { transition: filter 0.2s, transform 0.1s; }
+  .send-btn:hover:not(:disabled) { filter: brightness(1.08); }
+  .send-btn:active:not(:disabled) { transform: scale(0.97); }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   @keyframes bounce { 0%, 80%, 100% { transform: translateY(0); opacity: 0.5; } 40% { transform: translateY(-6px); opacity: 1; } }
   @media (max-width: 600px) {
+    .status-text, header p { display: none; }
     .wrap { padding: 0; }
     .chat { height: 100%; border-radius: 0; }
     .msg { max-width: 92%; }
@@ -99,11 +124,17 @@
 <main class="wrap">
   <section class="chat" aria-label="Gas turbine maintenance chat">
     <header>
-      <div>
-        <h1>Gas Turbine Maintenance Assistant</h1>
-        <p>Answers come only from the maintenance document, with page references.</p>
+      <div class="brand">
+        <div class="logo" aria-hidden="true">GT</div>
+        <div>
+          <h1>Gas Turbine Maintenance Assistant</h1>
+          <p>Answers only from GE GER-3620, citing page and section.</p>
+        </div>
       </div>
-      <button type="button" class="clear-btn" id="clear">Clear chat</button>
+      <div class="header-actions">
+        <span class="status" id="status" role="status"><span class="dot"></span><span class="status-text" id="status-text">Checking...</span></span>
+        <button type="button" class="clear-btn" id="clear">Clear chat</button>
+      </div>
     </header>
     <div class="messages" id="messages" role="log" aria-live="polite"></div>
     <form id="form">
@@ -111,6 +142,7 @@
       <input type="text" id="question" placeholder="Ask about inspections, intervals, maintenance factors..." autocomplete="off" maxlength="1000">
       <button type="submit" class="send-btn" id="send">Send</button>
     </form>
+    <p class="hint">Press Enter to send. Questions outside the document get "Not found".</p>
   </section>
 </main>
 
@@ -118,6 +150,13 @@
   // Chat logic. Kept in a classic script so it works even if the 3D background fails to load.
   const API_URL = "http://localhost:8000/ask";
   const REQUEST_TIMEOUT_MS = 60000;
+  const HEALTH_URL = API_URL.replace(/\/ask$/, "/health");
+  const SUGGESTED_QUESTIONS = [
+    "What are the three main types of inspection?",
+    "What does a maintenance factor of two mean?",
+    "What is the recommended combustion-inspection interval in hours?",
+    "What is the trip severity factor for a trip from peak load?",
+  ];
 
   const messagesEl = document.getElementById("messages");
   const form = document.getElementById("form");
@@ -238,12 +277,62 @@
     sendQuestion(question);
   });
 
+  function showSuggestions() {
+    const box = document.createElement("div");
+    box.className = "suggestions";
+    const title = document.createElement("span");
+    title.className = "suggestions-title";
+    title.textContent = "Try one of these:";
+    box.appendChild(title);
+    for (const question of SUGGESTED_QUESTIONS) {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip";
+      chip.textContent = question;
+      chip.addEventListener("click", () => {
+        if (input.disabled) return;
+        box.remove();
+        sendQuestion(question);
+      });
+      box.appendChild(chip);
+    }
+    messagesEl.appendChild(box);
+    scrollToBottom();
+  }
+
+  function showWelcome() {
+    addMessage("bot", "Hello! Ask me anything about heavy-duty gas turbine operation and maintenance. I answer only from the document and show the page and section I used.");
+    showSuggestions();
+  }
+
+  // Small online/offline indicator so users know whether the API is reachable.
+  async function checkHealth() {
+    const statusEl = document.getElementById("status");
+    const textEl = document.getElementById("status-text");
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 4000);
+    try {
+      const response = await fetch(HEALTH_URL, { signal: controller.signal });
+      const ok = response.ok;
+      statusEl.className = "status " + (ok ? "online" : "offline");
+      textEl.textContent = ok ? "Online" : "Offline";
+    } catch (_) {
+      statusEl.className = "status offline";
+      textEl.textContent = "Offline";
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   document.getElementById("clear").addEventListener("click", () => {
     messagesEl.replaceChildren();
+    showWelcome();
     input.focus();
   });
 
-  addMessage("bot", "Hello! Ask me anything about heavy-duty gas turbine operation and maintenance. I answer only from the document and show the page I used.");
+  showWelcome();
+  checkHealth();
+  setInterval(checkHealth, 30000);
 </script>
 
 <script type="module">
