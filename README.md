@@ -229,7 +229,7 @@ Official assignment questions, real output of `python run_questions.py`. Plain-t
 
 ## Screenshots
 
-Real screenshots of the web UI (http://localhost:8000/) for the 5 official questions, each showing the question asked, the answer and its page reference.
+Real screenshots of the web UI (http://localhost:8000/) for the 5 official questions, each showing the question asked, the answer, its page and section reference and the quoted evidence. The UI shows an online/offline status indicator and clickable suggested questions.
 
 ### Q1. What are the three main types of inspection?
 
@@ -261,7 +261,7 @@ Answer shown: all model-specific intervals from Figure 36, grouped by turbine ty
 
 ![Q5: What is the recommended combustion-inspection interval in hours?](screenshots/q5.png)
 
-Note: each screenshot is a separate live model call, so its wording can differ slightly from `results/answers.md`.
+Note: each screenshot is a separate live model call, so its wording can differ slightly from `results/answers.md`. For Q5 the exact per-model values are listed in the review notes above (Figure 36, page 33); the PDF loader flattens that table, so a single run can omit or repeat a value.
 
 ## Known limitations
 
