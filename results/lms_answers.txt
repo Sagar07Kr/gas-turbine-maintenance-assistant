@@ -1,0 +1,31 @@
+1. Question: What are the three main types of inspection?
+   Answer: The three types of scheduled inspections for the GE Vernova Annular/Silo fleet are Type A Visual Inspection, Type B Visual Inspection, and Type C Major Inspection.
+   Reference: project_3_gen_Ai.pdf, page 32, section "ABC Inspections For Annular/Silo Fleet"
+
+2. Question: What does a maintenance factor of two mean?
+   Answer: A maintenance factor of two indicates a maintenance interval that is half of the baseline interval.
+   Reference: project_3_gen_Ai.pdf, page 9, section "Major Factors Influencing Maintenance and Equipment Life"
+
+3. Question: What is the purchase price of this gas turbine?
+   Answer: Not found
+   Reference: No reference (not in the document)
+
+4. Question: What is the melting point of titanium?
+   Answer: Not found
+   Reference: No reference (not in the document)
+
+5. Question: What is the recommended combustion-inspection interval in hours?
+   Answer: The recommended combustion inspection intervals in hours vary by turbine model and configuration as listed below:
+- 6B Combustion (Non-DLN) Factored: 12000
+- 6B Combustion (DLN) Factored: 12000
+- 7E Combustion (Non-DLN) Factored: 8000
+- 7E Combustion (DLN) Factored: 12000
+- 9E Combustion (Non-DLN) Factored: 8000 (and 32000 for specific columns)
+- 9E Combustion (DLN) Factored: 32000
+- 6F Combustion (Non-DLN) Factored: 8000
+- 6F Combustion (DLN) Factored: 32000
+- 7F Combustion (Non-DLN) Factored: 24000
+- 7F Combustion (DLN) Factored: 24000 (and 32000 for specific columns)
+- 9F Combustion (DLN) Factored: 24000, 32000, and 12000
+- 7HA/9HA Combustion (DLN) Factored: 25000
+   Reference: project_3_gen_Ai.pdf, page 33, section "ABC Inspections For Annular/Silo Fleet"

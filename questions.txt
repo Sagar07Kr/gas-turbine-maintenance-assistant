@@ -1,0 +1,6 @@
+# Official assignment questions (Project 3). One question per line; run: python run_questions.py
+What are the three main types of inspection?
+What does a maintenance factor of two mean?
+What is the purchase price of this gas turbine?
+What is the melting point of titanium?
+What is the recommended combustion-inspection interval in hours?
